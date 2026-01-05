@@ -1,13 +1,19 @@
+// MIT License
+
 #include <SDL.h>
 #include <fmt/core.h>
+
+#include "window.h"
 
 int main(int argc, char* argv[]) {
   fmt::print("Hello, Professional C++ World!\n");
 
-  SDL_Window* window =
-      SDL_CreateWindow("Hello World!", SDL_WINDOWPOS_CENTERED,
-                       SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_RESIZABLE);
-  if (!window)
+  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    fmt::println(stderr, "Error initializing SDL: ", SDL_GetError());
+  }
+
+  Window window;
+  if (!window.Get())
     return 1;
 
   bool is_running = true;
@@ -20,6 +26,5 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  SDL_DestroyWindow(window);
   return 0;
 }
