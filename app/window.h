@@ -31,6 +31,14 @@ class Window {
   explicit Window(const Config&);
   ~Window() noexcept;
 
+  // Disallow copy
+  Window(const Window& other) = delete;
+  Window& operator=(const Window& other) = delete;
+
+  // Allow moves
+  Window(Window&& other) noexcept;
+  Window& operator=(Window&& other) noexcept;
+
   bool Ok() const;
   SDL_Window* Get() const;
 
