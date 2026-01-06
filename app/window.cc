@@ -9,7 +9,7 @@ Window::Window(const Config& config) {
   window_ = SDL_CreateWindow(config.title.c_str(), config.x, config.y, config.width,
                              config.height, config.flags);
   if (!window_) {
-    fmt::println(stderr, "Error creating SDL Window: ", SDL_GetError());
+    fmt::println(stderr, "Error creating SDL Window: {}", SDL_GetError());
     ok_ = false;
   } else {
     ok_ = true;
