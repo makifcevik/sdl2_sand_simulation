@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
   fmt::print("Hello, Professional C++ World!\n");
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-    fmt::println(stderr, "Error initializing SDL: ", SDL_GetError());
+    fmt::println(stderr, "Error initializing SDL: {}", SDL_GetError());
   }
 
   Window window;
