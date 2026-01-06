@@ -35,8 +35,8 @@ class Window {
   SDL_Window* Get() const;
 
  private:
-  SDL_Window* window_;
-  bool ok_;
+  SDL_Window* window_{nullptr};
+  bool ok_{false};
 };
 
 #endif  //SDL2_SAND_SIMULATION_APP_WINDOW_H_
