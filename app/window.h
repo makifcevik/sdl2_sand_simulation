@@ -11,7 +11,7 @@
 
 // Wrapper class for SDL_Window (handles its own memory)
 // Provides default configuration values with default constructor
-// Make sure to use `Ok()` to check if the creation is successfull
+// Make sure to use `Ok()` to check if the creation is successful
 // Use `Get()` to receive the underlying raw pointer
 class Window {
  public:
@@ -44,7 +44,6 @@ class Window {
 
  private:
   SDL_Window* window_{nullptr};
-  bool ok_{false};
 };
 
 #endif  //SDL2_SAND_SIMULATION_APP_WINDOW_H_
