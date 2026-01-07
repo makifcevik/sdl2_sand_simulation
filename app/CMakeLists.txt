@@ -1,4 +1,4 @@
-add_executable(Simulation "main.cc" "window.cc" "renderer.cc")
+add_executable(Simulation "main.cc" "window.cc" "renderer.cc" "input.cc")
 target_link_libraries(Simulation PRIVATE
 	core_lib
 	fmt::fmt
