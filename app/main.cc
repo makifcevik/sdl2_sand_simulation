@@ -4,6 +4,8 @@
 #include <fmt/core.h>
 
 #include "window.h"
+#include "renderer.h"
+#include "input.h"
 
 int main(int argc, char* argv[]) {
   fmt::print("Hello, Professional C++ World!\n");
@@ -16,13 +18,17 @@ int main(int argc, char* argv[]) {
   if (!window.Get())
     return 1;
 
+  Renderer renderer(window);
+
+  Input input;
+
   bool is_running = true;
   SDL_Event event;
   while (is_running) {
     while (SDL_PollEvent(&event)) {
-      if (event.type == SDL_QUIT) {
-        is_running = false;
-      }
+      input.BeginFrame();
+      input.ProcessEvent(event);
+      is_running = !input.QuitRequested();
     }
   }
 
