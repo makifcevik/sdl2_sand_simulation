@@ -7,6 +7,7 @@
 
 #include "input.h"
 #include "renderer.h"
+#include "texture.h"
 #include "window.h"
 
 // This class acts like the "Director"
@@ -42,9 +43,12 @@ class App {
   void Update();
   void Render();
 
+  std::vector<uint32_t> pixel_buffer_;
+
   // Systems (order matters! Window must be created before the Renderer).
   std::unique_ptr<Window> window_;
   std::unique_ptr<Renderer> renderer_;
+  std::unique_ptr<Texture> texture_;
   std::unique_ptr<Input> input_;
 
   bool is_running_{false};
