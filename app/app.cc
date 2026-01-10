@@ -22,14 +22,36 @@ App::App(const Config& config) {
 
   input_ = std::make_unique<Input>();
 
+  if (window_->Ok() && renderer_->Ok()) {
+    // Construct texture with default configuration values.
+    texture_ = std::make_unique<Texture>(*renderer_);
+
+    // Resize Buffer: Width * Height, filled with Black (0)
+    // 0xFF000000 is Black (Alpha=255), 0x00000000 is Transparent
+    pixel_buffer_.resize(texture_->GetWidth() * texture_->GetHeight(),
+                         0xFF000000);
+  }
+
   // Validation
   // If anything has failed, we are not running
-  is_running_ = window_->Ok() && renderer_->Ok();
+  is_running_ = window_->Ok() && renderer_->Ok() && texture_->Ok();
 }
 
 App::~App() noexcept {
+  // Destroy resources in REVERSE dependency order.
+  // Texture depends on Renderer, destroy it first.
+  texture_.reset();
+
+  // Renderer depends on Window.
+  renderer_.reset();
+
+  // Window is the root.
+  window_.reset();
+
+  // Input is independent, but good to clean up.
+  input_.reset();
+
   // `SDL_Quit()` must be the very last thing called
-  // Systems (renderer, window) will be destroyed automatically by unique_ptr
   SDL_Quit();
 }
 
@@ -75,7 +97,19 @@ void App::Update() {
 void App::Render() {
   renderer_->Clear();
 
-  // Render here later
+  // Test:
+  // Generate noise
+  if (!pixel_buffer_.empty()) {
+    for (uint32_t i = 0; i < pixel_buffer_.size(); ++i) {
+      uint8_t random_val = rand() % 255;
+      uint32_t color =
+          (random_val << 24) | (random_val << 16) | (random_val << 8) | 255;
+      pixel_buffer_[i] = color;
+    }
+    texture_->Update(pixel_buffer_);
+  }
+
+  renderer_->RenderFrame(texture_->Get());
 
   renderer_->Present();
 }
