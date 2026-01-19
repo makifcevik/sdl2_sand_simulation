@@ -42,8 +42,13 @@ class Window {
   bool Ok() const;
   SDL_Window* Get() const;
 
+  uint32_t GetWidth() const { return width_; }
+  uint32_t GetHeight() const { return height_; }
+
  private:
   SDL_Window* window_{nullptr};
+  uint32_t width_;
+  uint32_t height_;
 };
 
 #endif  //SDL2_SAND_SIMULATION_APP_WINDOW_H_
