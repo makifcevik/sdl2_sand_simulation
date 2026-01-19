@@ -9,6 +9,7 @@
 #include "renderer.h"
 #include "texture.h"
 #include "window.h"
+#include "world.h"
 
 // This class acts like the "Director"
 // It owns `Window`, `Renderer`, and `Input` systems and
@@ -40,7 +41,7 @@ class App {
  private:
   // The 3 phases of the game loop
   void PollEvents();
-  void Update();
+  void Update(uint32_t frame_count);
   void Render();
 
   std::vector<uint32_t> pixel_buffer_;
@@ -50,6 +51,7 @@ class App {
   std::unique_ptr<Renderer> renderer_;
   std::unique_ptr<Texture> texture_;
   std::unique_ptr<Input> input_;
+  std::unique_ptr<World> world_;
 
   bool is_running_{false};
 };
