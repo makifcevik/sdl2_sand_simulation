@@ -12,11 +12,15 @@ Window::Window(const Config& config) {
   if (!window_) {
     fmt::println(stderr, "Error creating SDL Window: {}", SDL_GetError());
   }
+  width_ = config.width;
+  height_ = config.height;
 };
 
 // Move constructor
 Window::Window(Window&& other) noexcept
-    : window_(std::exchange(other.window_, nullptr)) {}
+    : width_(other.width_),
+      height_(other.height_),
+      window_(std::exchange(other.window_, nullptr)) {}
 
 // Move assignment
 Window& Window::operator=(Window&& other) noexcept {
@@ -25,6 +29,8 @@ Window& Window::operator=(Window&& other) noexcept {
     if (window_) {
       SDL_DestroyWindow(window_);
     }
+    width_ = other.width_;
+    height_ = other.height_;
     window_ = std::exchange(other.window_, nullptr);
   }
   return *this;
