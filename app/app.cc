@@ -32,6 +32,12 @@ App::App(const Config& config) {
                          0xFF000000);
   }
 
+  if (texture_->Ok()) {
+    // Construct the world
+    world_ =
+        std::make_unique<World>(texture_->GetWidth(), texture_->GetHeight());
+  }
+
   // Validation
   // If anything has failed, we are not running
   is_running_ = window_->Ok() && renderer_->Ok() && texture_->Ok();
@@ -48,8 +54,9 @@ App::~App() noexcept {
   // Window is the root.
   window_.reset();
 
-  // Input is independent, but good to clean up.
+  // Input and world are independent, but good to clean up.
   input_.reset();
+  world_.reset();
 
   // `SDL_Quit()` must be the very last thing called
   SDL_Quit();
@@ -61,6 +68,8 @@ int App::Run() {
 
   uint64_t last_time = SDL_GetTicks64();
   double dt{0.0};
+  float fps_timer = 0.0f;
+  uint32_t frame_count = 0;
 
   while (is_running_) {
     uint64_t current_time = SDL_GetTicks64();
@@ -68,8 +77,19 @@ int App::Run() {
     last_time = current_time;
     dt = static_cast<double>(frame_time) / 1000.0;
 
+    frame_count++;
+    fps_timer += dt;
+
+    if (fps_timer > 1) {
+      std::string title = "FPS: " + std::to_string(frame_count);
+      SDL_SetWindowTitle(window_->Get(), title.c_str());
+
+      frame_count = 0;
+      fps_timer = 0.0f;
+    }
+
     PollEvents();
-    Update();
+    Update(frame_count);
     Render();
   }
   return 0;
@@ -84,32 +104,99 @@ void App::PollEvents() {
   }
 }
 
-void App::Update() {
-  // Update logic here later
+void App::Update(uint32_t frame_count) {
+
+  // --- Quit logic
   if (input_->QuitRequested()) {
     is_running_ = false;
   }
   if (input_->IsKeyPressed(SDL_SCANCODE_ESCAPE)) {
     is_running_ = false;
   }
+
+  // --- Spawn sand with left mouse button
+  if (input_->IsMouseButtonDown(SDL_BUTTON_LEFT)) {
+    int32_t mouse_x, mouse_y;
+    input_->GetMousePosition(&mouse_x, &mouse_y);
+
+    // CRITICAL: Convert screen coordinates to world coordinates
+    // Texture (world) size might not be equal to the window size
+    float scale_x =
+        static_cast<float>(texture_->GetWidth()) / window_->GetWidth();
+    float scale_y =
+        static_cast<float>(texture_->GetHeight()) / window_->GetHeight();
+
+    int32_t world_x = static_cast<int32_t>(mouse_x * scale_x);
+    int32_t world_y = static_cast<int32_t>(mouse_y * scale_y);
+
+    // Simple brush
+    for (uint16_t i = 0; i < 128; ++i) {
+      for (uint16_t j = 0; j < 128; ++j) {
+        world_->SetCell(world_x + i, world_y + j, World::CellType::kSand);
+      }
+    }
+  }
+
+  // --- Destroy sand with right mouse button
+  if (input_->IsMouseButtonDown(SDL_BUTTON_RIGHT)) {
+    int32_t mouse_x, mouse_y;
+    input_->GetMousePosition(&mouse_x, &mouse_y);
+
+    // CRITICAL: Convert screen coordinates to world coordinates
+    // Texture (world) size might not be equal to the window size
+    float scale_x =
+        static_cast<float>(texture_->GetWidth()) / window_->GetWidth();
+    float scale_y =
+        static_cast<float>(texture_->GetHeight()) / window_->GetHeight();
+
+    int32_t world_x = static_cast<int32_t>(mouse_x * scale_x);
+    int32_t world_y = static_cast<int32_t>(mouse_y * scale_y);
+
+    // Simple brush
+    for (uint16_t i = 0; i < 256; ++i) {
+      for (uint16_t j = 0; j < 256; ++j) {
+        world_->SetCell(world_x + i, world_y + j, World::CellType::kEmpty);
+      }
+    }
+  }
+
+  // --- Run the simulation step
+  world_->Update(frame_count);
 }
 
 void App::Render() {
   renderer_->Clear();
 
-  // Test:
-  // Generate noise
-  if (!pixel_buffer_.empty()) {
-    for (uint32_t i = 0; i < pixel_buffer_.size(); ++i) {
-      uint8_t random_val = rand() % 255;
-      uint32_t color =
-          (random_val << 24) | (random_val << 16) | (random_val << 8) | 255;
-      pixel_buffer_[i] = color;
+  // Convert world cells to pixel colors.
+  const auto& cells = world_->GetCells();
+
+  // Iterate through every cell.
+  for (size_t i = 0; i < cells.size(); ++i) {
+    uint32_t color = 0x00'00'00'FF;  // Default color (empty cell).
+    if (cells[i] == World::CellType::kSand) {
+      color = 0xB89B35FF;  // Sand Color
     }
-    texture_->Update(pixel_buffer_);
+    pixel_buffer_[i] = color;
   }
 
+  // Upload and draw.
+  texture_->Update(pixel_buffer_);
   renderer_->RenderFrame(texture_->Get());
-
   renderer_->Present();
+
+  //// Test:
+  //// Generate noise
+  //if (!pixel_buffer_.empty()) {
+  //  for (uint32_t i = 0; i < pixel_buffer_.size(); ++i) {
+  //    uint8_t random_val = rand() % 255;
+  //    uint32_t color =
+  //        (random_val << 24) | (random_val << 16) | (random_val << 8) | 255;
+  //    pixel_buffer_[i] = color;
+  //  }
+  //  texture_->Update(pixel_buffer_);
+  //}
+
+  //renderer_->RenderFrame(texture_->Get());
+
+  //renderer_->Present();
 }
