@@ -20,8 +20,8 @@ class Renderer;
 class Texture {
  public:
   struct Config {
-    uint32_t width = 320;
-    uint32_t height = 180;
+    uint32_t width = 1920;
+    uint32_t height = 1080;
 
     // Standard "one int per pixel" format.
     uint32_t format = SDL_PIXELFORMAT_RGBA8888;
