@@ -14,6 +14,9 @@ void Input::BeginFrame() {
   pressed_keys_.clear();
   released_keys_.clear();
 
+  // Reset scroll delta
+  scroll_delta_ = 0;
+
   // Initialize the keyboard state once (SDL handles the rest).
   if (!keyboard_state_) {
     keyboard_state_ = SDL_GetKeyboardState(nullptr);
@@ -37,6 +40,10 @@ void Input::ProcessEvent(const SDL_Event& event) {
 
     case SDL_KEYUP:
       released_keys_.push_back(event.key.keysym.scancode);
+      break;
+
+    case SDL_MOUSEWHEEL:
+      scroll_delta_ = event.wheel.y;  // +1 or -1
       break;
 
   }  // End of switch statement

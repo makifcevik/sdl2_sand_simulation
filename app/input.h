@@ -30,6 +30,9 @@ class Input {
   bool IsMouseButtonDown(uint8_t button) const;
   void GetMousePosition(int32_t* x_out, int32_t* y_out) const;
 
+  // Mouse scroll
+  int32_t GetScrollDelta() const { return scroll_delta_; }
+
   bool QuitRequested() const;
 
  private:
@@ -37,6 +40,7 @@ class Input {
   std::vector<SDL_Scancode> pressed_keys_;
   // Stores keys released this frame.
   std::vector<SDL_Scancode> released_keys_;
+  int32_t scroll_delta_{0};
   // Pointer to SDL's internal keyboard state array (managed by SDL).
   const uint8_t* keyboard_state_{nullptr};
   bool quit_requested_{false};
