@@ -44,6 +44,13 @@ class App {
   void Update(uint32_t frame_count);
   void Render();
 
+  void SpawnSand(uint32_t frame_count);
+  void DestroySand(uint32_t frame_count);
+  void ModifyBrushSize();
+
+  // Uses brush to draw cells.
+  void Draw(World::CellType type, int32_t x, int32_t y);
+
   std::vector<uint32_t> pixel_buffer_;
 
   // Systems (order matters! Window must be created before the Renderer).
@@ -52,6 +59,10 @@ class App {
   std::unique_ptr<Texture> texture_;
   std::unique_ptr<Input> input_;
   std::unique_ptr<World> world_;
+  
+  const int32_t MIN_BRUSH_SIZE = 2;
+  const int32_t MAX_BRUSH_SIZE = 256;
+  int32_t brush_size_{32};
 
   bool is_running_{false};
 };

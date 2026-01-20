@@ -80,8 +80,12 @@ int App::Run() {
     frame_count++;
     fps_timer += dt;
 
-    if (fps_timer > 1) {
-      std::string title = "FPS: " + std::to_string(frame_count);
+    if (fps_timer > 0.1) {
+      std::string title =
+          "Brush Size: " + std::to_string(brush_size_) +
+          "   Sand Count: " + std::to_string(world_->GetSandCount()) +
+          "   FPS: " +
+          std::to_string(static_cast<int32_t>(frame_count * (1 / fps_timer)));
       SDL_SetWindowTitle(window_->Get(), title.c_str());
 
       frame_count = 0;
@@ -114,50 +118,16 @@ void App::Update(uint32_t frame_count) {
     is_running_ = false;
   }
 
+  // Checks the mouse scroll wheel and updates the brush size.
+  ModifyBrushSize();
+
   // --- Spawn sand with left mouse button
   if (input_->IsMouseButtonDown(SDL_BUTTON_LEFT)) {
-    int32_t mouse_x, mouse_y;
-    input_->GetMousePosition(&mouse_x, &mouse_y);
-
-    // CRITICAL: Convert screen coordinates to world coordinates
-    // Texture (world) size might not be equal to the window size
-    float scale_x =
-        static_cast<float>(texture_->GetWidth()) / window_->GetWidth();
-    float scale_y =
-        static_cast<float>(texture_->GetHeight()) / window_->GetHeight();
-
-    int32_t world_x = static_cast<int32_t>(mouse_x * scale_x);
-    int32_t world_y = static_cast<int32_t>(mouse_y * scale_y);
-
-    // Simple brush
-    for (uint16_t i = 0; i < 128; ++i) {
-      for (uint16_t j = 0; j < 128; ++j) {
-        world_->SetCell(world_x + i, world_y + j, World::CellType::kSand);
-      }
-    }
+    SpawnSand(frame_count);
   }
-
   // --- Destroy sand with right mouse button
   if (input_->IsMouseButtonDown(SDL_BUTTON_RIGHT)) {
-    int32_t mouse_x, mouse_y;
-    input_->GetMousePosition(&mouse_x, &mouse_y);
-
-    // CRITICAL: Convert screen coordinates to world coordinates
-    // Texture (world) size might not be equal to the window size
-    float scale_x =
-        static_cast<float>(texture_->GetWidth()) / window_->GetWidth();
-    float scale_y =
-        static_cast<float>(texture_->GetHeight()) / window_->GetHeight();
-
-    int32_t world_x = static_cast<int32_t>(mouse_x * scale_x);
-    int32_t world_y = static_cast<int32_t>(mouse_y * scale_y);
-
-    // Simple brush
-    for (uint16_t i = 0; i < 256; ++i) {
-      for (uint16_t j = 0; j < 256; ++j) {
-        world_->SetCell(world_x + i, world_y + j, World::CellType::kEmpty);
-      }
-    }
+    DestroySand(frame_count);
   }
 
   // --- Run the simulation step
@@ -183,20 +153,58 @@ void App::Render() {
   texture_->Update(pixel_buffer_);
   renderer_->RenderFrame(texture_->Get());
   renderer_->Present();
+}
 
-  //// Test:
-  //// Generate noise
-  //if (!pixel_buffer_.empty()) {
-  //  for (uint32_t i = 0; i < pixel_buffer_.size(); ++i) {
-  //    uint8_t random_val = rand() % 255;
-  //    uint32_t color =
-  //        (random_val << 24) | (random_val << 16) | (random_val << 8) | 255;
-  //    pixel_buffer_[i] = color;
-  //  }
-  //  texture_->Update(pixel_buffer_);
-  //}
+void App::SpawnSand(uint32_t frame_count) {
+  int32_t mouse_x, mouse_y;
+  input_->GetMousePosition(&mouse_x, &mouse_y);
 
-  //renderer_->RenderFrame(texture_->Get());
+  // CRITICAL: Convert screen coordinates to world coordinates
+  // Texture (world) size might not be equal to the window size
+  float scale_x =
+      static_cast<float>(texture_->GetWidth()) / window_->GetWidth();
+  float scale_y =
+      static_cast<float>(texture_->GetHeight()) / window_->GetHeight();
 
-  //renderer_->Present();
+  int32_t world_x = static_cast<int32_t>(mouse_x * scale_x);
+  int32_t world_y = static_cast<int32_t>(mouse_y * scale_y);
+
+  Draw(World::CellType::kSand, world_x, world_y);
+}
+
+void App::DestroySand(uint32_t frame_count) {
+  int32_t mouse_x, mouse_y;
+  input_->GetMousePosition(&mouse_x, &mouse_y);
+
+  // CRITICAL: Convert screen coordinates to world coordinates
+  // Texture (world) size might not be equal to the window size
+  float scale_x =
+      static_cast<float>(texture_->GetWidth()) / window_->GetWidth();
+  float scale_y =
+      static_cast<float>(texture_->GetHeight()) / window_->GetHeight();
+
+  int32_t world_x = static_cast<int32_t>(mouse_x * scale_x);
+  int32_t world_y = static_cast<int32_t>(mouse_y * scale_y);
+
+  Draw(World::CellType::kEmpty, world_x, world_y);
+}
+
+void App::ModifyBrushSize() {
+  brush_size_ += input_->GetScrollDelta();
+  if (brush_size_ < MIN_BRUSH_SIZE)
+    brush_size_ = MIN_BRUSH_SIZE;
+  if (brush_size_ > MAX_BRUSH_SIZE)
+    brush_size_ = MAX_BRUSH_SIZE;
+}
+
+void App::Draw(World::CellType type, int32_t world_x, int32_t world_y) {
+  // Simple brush
+  for (int y = -brush_size_; y <= brush_size_; ++y) {
+    for (int x = -brush_size_; x <= brush_size_; ++x) {
+      // Circle check
+      if (x * x + y * y < brush_size_ * brush_size_) {
+        world_->SetCell(world_x + x, world_y + y, type);
+      }
+    }  // End of the inner for loop
+  }  // End of the outer for loop
 }
