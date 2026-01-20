@@ -24,6 +24,8 @@ class World {
   void Update(uint32_t frame_count);
 
   // Internally checks if coordinates are valid
+  // Updates only if the type provided differs from the cell type at that coords.
+  // (Reqired to safely update the sand_count_)
   void SetCell(int32_t x, int32_t y, CellType type);
 
   // Internally checks if coordinates are valid
@@ -31,12 +33,14 @@ class World {
 
   int32_t GetWidth() const { return width_; };
   int32_t GetHeight() const { return height_; };
+  uint64_t GetSandCount() const { return sand_count_; }
 
   // You can use it to access the underlying cells (can be fed to a graphics API).
   const std::vector<CellType>& GetCells() const { return cells_; };
 
  private:
   std::vector<CellType> cells_;
+  uint64_t sand_count_{0};
   int32_t width_;
   int32_t height_;
 

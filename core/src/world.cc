@@ -74,9 +74,20 @@ void World::Update(uint32_t frame_count) {
   }  // End of outer for loop
 }
 
+// Internally checks if coordinates are valid
+// Updates only if the type provided differs from the cell type at that coords.
+// (Reqired to safely update the sand_count_)
 void World::SetCell(int32_t x, int32_t y, CellType type) {
   if (IsValid(x, y)) {
-    cells_[width_ * y + x] = type;
+    if (type != cells_[width_ * y + x]) {
+
+      if (type == CellType::kSand)
+        sand_count_++;
+      else
+        sand_count_--;
+
+      cells_[width_ * y + x] = type;
+    }
   }
 }
 
