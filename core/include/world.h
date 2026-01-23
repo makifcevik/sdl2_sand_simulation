@@ -15,6 +15,12 @@
 class World {
  public:
   enum class CellType : uint8_t { kEmpty = 0, kSand = 1 };
+  
+  // Static lookup table for colors.
+  static constexpr uint32_t kColorTable[] = {
+      0x00'00'00'FF,  // EMPTY
+      0xB8'9B'35'FF   // SAND
+  };
 
   // Set the simulation width and height.
   World(int32_t width, int32_t height);

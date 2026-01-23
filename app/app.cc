@@ -142,11 +142,7 @@ void App::Render() {
 
   // Iterate through every cell.
   for (size_t i = 0; i < cells.size(); ++i) {
-    uint32_t color = 0x00'00'00'FF;  // Default color (empty cell).
-    if (cells[i] == World::CellType::kSand) {
-      color = 0xB89B35FF;  // Sand Color
-    }
-    pixel_buffer_[i] = color;
+    pixel_buffer_[i] = World::kColorTable[int32_t(cells[i])];
   }
 
   // Upload and draw.
